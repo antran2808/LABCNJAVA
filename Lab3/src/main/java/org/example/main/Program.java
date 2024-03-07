@@ -1,10 +1,11 @@
-package org.example;
+package org.example.main;
 
 import org.example.DAO.InvalidOperationException;
 import org.example.DAO.ManufactureDAO;
 import org.example.DAO.PhoneDAO;
-import org.example.Entity.Manufacture;
-import org.example.Entity.Phone;
+import org.example.entity.Manufacture;
+import org.example.entity.Phone;
+import org.example.utils.HibernateUtils;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 

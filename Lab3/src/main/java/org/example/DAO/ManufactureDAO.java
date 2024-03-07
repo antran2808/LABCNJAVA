@@ -1,18 +1,21 @@
-package org.example;
+package org.example.DAO;
 
+import org.example.DAO.Repository;
+import org.example.entity.Manufacture;
+import org.example.entity.Phone;
+import org.example.utils.HibernateUtils;
+
+import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
+import java.sql.SQLException;
 import java.util.List;
+
 public class ManufactureDAO implements Repository<Manufacture, String> {
-    private Session session;
+    private final Session session = HibernateUtils.getSessionFactory().openSession();
 
-    public ManufactureDAO(Session session) {
-        this.session = session;
-    }
-
-
-
+    @Override
     public String add(Manufacture item) {
         session.beginTransaction();
         String id = (String) session.save(item);
@@ -20,32 +23,47 @@ public class ManufactureDAO implements Repository<Manufacture, String> {
         return id;
     }
 
+    @Override
     public List<Manufacture> readAll() {
         Query<Manufacture> query = session.createQuery("FROM Manufacture", Manufacture.class);
         return query.list();
     }
 
+    @Override
     public Manufacture read(String id) {
         return session.get(Manufacture.class, id);
     }
 
+    @Override
     public boolean update(Manufacture item) {
         session.beginTransaction();
-        session.update(item);
+        Query query = session.createQuery("UPDATE Manufacture SET name = :name, location = :location, employee = :employee WHERE id = :id");
+        query.setParameter("name", item.getName());
+        query.setParameter("location", item.getLocation());
+        query.setParameter("employee", item.getEmployee());
+        query.setParameter("id", item.getId());
+        int re = query.executeUpdate();
         session.getTransaction().commit();
-        return true;
+        if (re > 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
+    @Override
     public boolean delete(String id) {
         session.beginTransaction();
-        Manufacture manufacture = session.get(Manufacture.class, id);
-        if (manufacture != null) {
-            session.delete(manufacture);
+        try {
+            String hql = "DELETE FROM Manufacture WHERE id = " + id;
+            Query query = session.createQuery(hql);
+            int affectedRows = query.executeUpdate();
             session.getTransaction().commit();
-            return true;
+            return  true;
+        } catch (ObjectNotFoundException e) {
+            System.out.println("Fail to find and delete: " + id);
+            return false;
         }
-        session.getTransaction().rollback();
-        return false;
     }
 
     public boolean areAllManufacturesAboveEmployeeCount(int employeeCount) {

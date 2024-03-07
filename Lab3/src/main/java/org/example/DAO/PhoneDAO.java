@@ -1,21 +1,22 @@
-package org.example;
+package org.example.DAO;
+
+import org.example.entity.Phone;
+import org.hibernate.ObjectNotFoundException;
+import org.example.utils.HibernateUtils;
 
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
 
 public class PhoneDAO implements Repository<Phone, String> {
 
-    private Session session;
+    private final Session session = HibernateUtils.getSessionFactory().openSession();
 
-    public PhoneDAO(Session session) {
-        this.session = session;
-    }
-
+    @Override
     public String add(Phone item) {
         session.beginTransaction();
         String id = (String) session.save(item);
@@ -23,32 +24,47 @@ public class PhoneDAO implements Repository<Phone, String> {
         return id;
     }
 
+    @Override
     public List<Phone> readAll() {
         Query<Phone> query = session.createQuery("FROM Phone", Phone.class);
         return query.list();
     }
 
+    @Override
     public Phone read(String id) {
         return session.get(Phone.class, id);
     }
 
+    @Override
     public boolean update(Phone item) {
-        session.beginTransaction();
-        session.update(item);
+        Query query = session.createQuery("UPDATE Phone SET name = :name, price = :price, color = :color, quantity = :quantity WHERE id = :id");
+        query.setParameter("name", item.getName());
+        query.setParameter("price", item.getPrice());
+        query.setParameter("color", item.getColor());
+        query.setParameter("quantity", item.getQuantity());
+        query.setParameter("id", item.getId());
+        int re = query.executeUpdate();
         session.getTransaction().commit();
-        return true;
+        if (re > 0) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
+    @Override
     public boolean delete(String id) {
         session.beginTransaction();
-        Phone phone = session.get(Phone.class, id);
-        if (phone != null) {
-            session.delete(phone);
+        try {
+            String hql = "DELETE FROM Phone WHERE id = " + id;
+            Query query = session.createQuery(hql);
+            int affectedRows = query.executeUpdate();
             session.getTransaction().commit();
-            return true;
+            return  true;
+        } catch (ObjectNotFoundException e) {
+            System.out.println("Fail to find and delete: " + id);
+            return false;
         }
-        session.getTransaction().rollback();
-        return false;
     }
 
     public Phone getById(String id) {
