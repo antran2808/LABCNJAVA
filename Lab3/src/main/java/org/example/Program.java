@@ -20,8 +20,8 @@ public class Program {
         Session session = sessionFactory.openSession();
 
         // Khởi tạo PhoneDAO và ManufactureDAO
-        PhoneDAO phoneDAO = new PhoneDAO(session);
-        ManufactureDAO manufactureDAO = new ManufactureDAO(session);
+        PhoneDAO phoneDAO = new PhoneDAO();
+        ManufactureDAO manufactureDAO = new ManufactureDAO();
 
         try {
 
