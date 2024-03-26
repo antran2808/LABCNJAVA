@@ -1,42 +1,41 @@
 package org.example.DAO;
 
 import org.example.entity.Phone;
-import org.hibernate.ObjectNotFoundException;
 import org.example.utils.HibernateUtils;
-
+import org.hibernate.ObjectNotFoundException;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 
-import java.util.List;
-import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
-
-public class PhoneDAO implements Repository<Phone, String> {
-
+public class PhoneDAO implements Repository<Phone, Long> {
     private final Session session = HibernateUtils.getSessionFactory().openSession();
 
     @Override
-    public String add(Phone item) {
-        session.beginTransaction();
-        String id = (String) session.save(item);
-        session.getTransaction().commit();
+    public Long add(Phone item){
+        Long id = (Long) session.save(item);
+        //session.close();
         return id;
     }
 
     @Override
-    public List<Phone> readAll() {
-        Query<Phone> query = session.createQuery("FROM Phone", Phone.class);
-        return query.list();
+    public List<Phone> readAll()  {
+        //session.beginTransaction();
+        Query query = session.createQuery("from Phone");
+        List<Phone> phones = query.list();
+        //session.close();
+        return phones;
     }
 
     @Override
-    public Phone read(String id) {
+    public Phone read(Long id)  {
         return session.get(Phone.class, id);
     }
 
     @Override
-    public boolean update(Phone item) {
+    public boolean update(Phone item)  {
+        session.beginTransaction();
         Query query = session.createQuery("UPDATE Phone SET name = :name, price = :price, color = :color, quantity = :quantity WHERE id = :id");
         query.setParameter("name", item.getName());
         query.setParameter("price", item.getPrice());
@@ -53,7 +52,7 @@ public class PhoneDAO implements Repository<Phone, String> {
     }
 
     @Override
-    public boolean delete(String id) {
+    public boolean delete(Long id)  {
         session.beginTransaction();
         try {
             String hql = "DELETE FROM Phone WHERE id = " + id;
@@ -62,37 +61,59 @@ public class PhoneDAO implements Repository<Phone, String> {
             session.getTransaction().commit();
             return  true;
         } catch (ObjectNotFoundException e) {
-            System.out.println("Fail to find and delete: " + id);
+            System.out.println("Lỗi: Không tìm thấy bản ghi với ID " + id);
             return false;
         }
     }
-
-    public Phone getById(String id) {
-        return session.get(Phone.class, id);
+    public Phone hightestPrice()  {
+        List<Phone> phones = readAll();
+        int price = 0;
+        Phone phone = null;
+        for(Phone p: phones){
+            if(p.getPrice() > price){
+                price = p.getPrice();
+                phone = p;
+            }
+        }
+        System.out.println("Hightest price: " + phone.toString());
+        return phone;
     }
-
-    public Phone getPhoneWithHighestSellingPrice() {
-        Query<Phone> query = session.createQuery("FROM Phone ORDER BY price DESC", Phone.class);
+    public List<Phone> listPhoneByCountry(String name)  {
+        String hql = "FROM Phone ORDER BY price ASC";
+        Query query = session.createQuery(hql);
+        List<Phone> phones =  query.list();
+        List<Phone> listPhone = new ArrayList<>();
+        for(Phone p: phones){
+            if(p.getManufacture().getLocation().equals(name)){
+                listPhone.add(p);
+            }
+        }
+        return listPhone;
+    }
+    public Phone overMillion()  {
+        List<Phone> phones = readAll();
+        Phone phone = null;
+        for(Phone p: phones){
+            if(p.getPrice() > 50000000){
+                phone = p;
+            }
+        }
+        if(phone != null){
+            System.out.println("Phone priced above 50 million VND: " + phone.toString());
+        }else{
+            System.out.println("Not exist.");
+        }
+        return phone;
+    }
+    public Phone firstPhone(){
+        String hql = "FROM Phone WHERE color = 'hong' AND price > 15000000";
+        Query query = session.createQuery(hql);
         query.setMaxResults(1);
-        return query.uniqueResult();
-    }
-
-    public List<Phone> getPhonesSortedByCountryName() {
-        Query<Phone> query = session.createQuery("FROM Phone ORDER BY country ASC, price DESC", Phone.class);
-        return query.list();
-    }
-
-    public boolean hasPhonePricedAbove50Million() {
-        Query<Long> query = session.createQuery("SELECT COUNT(*) FROM Phone WHERE price > 50000000", Long.class);
-        Long count = query.uniqueResult();
-        return count > 0;
-    }
-
-    public Phone getFirstPhoneWithColorAndPriceCriteria(String color, double price) {
-        Query<Phone> query = session.createQuery("FROM Phone WHERE color = :color AND price > :price", Phone.class);
-        query.setParameter("color", color);
-        query.setParameter("price", price);
-        query.setMaxResults(1);
-        return query.uniqueResult();
+        List<Phone> phone = query.list();
+        if( phone.size() >= 1 ){
+            return phone.get(0);
+        }else{
+            return null;
+        }
     }
 }

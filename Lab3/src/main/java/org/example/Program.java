@@ -1,6 +1,5 @@
-package org.example.main;
+package org.example;
 
-import org.example.DAO.InvalidOperationException;
 import org.example.DAO.ManufactureDAO;
 import org.example.DAO.PhoneDAO;
 import org.example.entity.Manufacture;
@@ -8,92 +7,53 @@ import org.example.entity.Phone;
 import org.example.utils.HibernateUtils;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 
+import java.beans.XMLEncoder;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Program {
-    public static void main(String[] args) {
-        // Khởi tạo SessionFactory từ HibernateUtils
-        SessionFactory sessionFactory = HibernateUtils.getSessionFactory();
+    static PhoneDAO phoneDAO = new PhoneDAO();
+    static ManufactureDAO manufactureDAO = new ManufactureDAO();
+    static Manufacture manufacture;
 
-        // Mở phiên làm việc Hibernate
-        Session session = sessionFactory.openSession();
+    public static void main( String[] args ) throws SQLException
+    {
+        addData();
+        showData();
+        phoneDAO.hightestPrice();
+        System.out.println(phoneDAO.firstPhone());
 
-        // Khởi tạo PhoneDAO và ManufactureDAO
-        PhoneDAO phoneDAO = new PhoneDAO();
-        ManufactureDAO manufactureDAO = new ManufactureDAO();
-
-        try {
-
-            // Thêm một sản phẩm mới
-            Phone newPhone = new Phone("Phone X", 50000000, "Black");
-            String newProductId = phoneDAO.add(newPhone);
-            System.out.println("Added product with ID: " + newProductId);
-
-            // Đọc danh sách sản phẩm
-            System.out.println("Product list:");
-            List<Phone> phones = phoneDAO.readAll();
-            for (Phone phone : phones) {
-                System.out.println(phone);
-            }
-
-            // Đọc một sản phẩm theo id
-            String productId = "1";
-            Phone phoneById = phoneDAO.getById(productId);
-            System.out.println("Product with ID " + productId + ": " + phoneById);
-
-            // Cập nhật một sản phẩm
-            String updateProductId = "2";
-            Phone updatedPhone = phoneDAO.getById(updateProductId);
-            updatedPhone.setName("Phone Y");
-            phoneDAO.update(updatedPhone);
-            System.out.println("Updated product with ID " + updateProductId + ": " + updatedPhone);
-
-            // Xóa một sản phẩm
-            String deleteProductId = "3"    ;
-            phoneDAO.delete(deleteProductId);
-            System.out.println("Deleted product with ID: " + deleteProductId);
-
-            // Lấy điện thoại có giá bán cao nhất
-            Phone phoneWithHighestPrice = phoneDAO.getPhoneWithHighestSellingPrice();
-            System.out.println("Phone with highest selling price: " + phoneWithHighestPrice);
-
-            // Lấy danh sách điện thoại sắp xếp theo tên quốc gia, nếu hai điện thoại có cùng quốc gia thì sắp xếp giảm dần theo giá
-            List<Phone> phonesSortedByCountry = phoneDAO.getPhonesSortedByCountryName();
-            System.out.println("Phones sorted by country name:");
-            for (Phone phone : phonesSortedByCountry) {
-                System.out.println(phone);
-            }
-
-            // Kiểm tra xem có điện thoại có giá trên 50 triệu VND hay không
-            boolean hasPhoneAbove50Million = phoneDAO.hasPhonePricedAbove50Million();
-            System.out.println("Is there any phone above 50 million VND? " + hasPhoneAbove50Million);
-
-            // Lấy điện thoại đầu tiên trong danh sách thỏa mãn: có màu 'Pink' và giá trên 15 triệu
-            Phone firstMatchingPhone = phoneDAO.getFirstPhoneWithColorAndPriceCriteria("Pink", 15000000);
-            System.out.println("First matching phone: " + firstMatchingPhone);
-
-            // Kiểm tra xem tất cả nhà sản xuất có hơn 100 nhân viên không
-            boolean areAllManufacturersAbove100Employees = manufactureDAO.areAllManufacturesAboveEmployeeCount(100);
-            System.out.println("Are all manufacturers above 100 employees? " + areAllManufacturersAbove100Employees);
-
-            // Lấy tổng số nhân viên của tất cả nhà sản xuất
-            int sumOfEmployees = manufactureDAO.getSumOfEmployees();
-            System.out.println("Sum of employees: " + sumOfEmployees);
-
-            // Lấy nhà sản xuất cuối cùng đáp ứng tiêu chí: có trụ sở tại Mỹ
-            Manufacture lastManufacturerBasedInUS = manufactureDAO.getLastManufactureBasedInUS();
-            if (lastManufacturerBasedInUS != null) {
-                System.out.println("Last manufacturer based in the US: " + lastManufacturerBasedInUS.getName());
-            } else {
-                throw new InvalidOperationException("No manufacturer based in the US found.");
-            }
-        } catch (InvalidOperationException e) {
-            System.out.println("Error: " + e.getMessage());
-        } finally {
-            // Đóng phiên làm việc Hibernate và shutdown HibernateUtils
-            session.close();
-            HibernateUtils.shutdown();
+        for(Manufacture m: manufactureDAO.readAll()){
+            System.out.println(m.toString());
+        }
+        //manufactureDAO.delete(6L);
+        for(Manufacture m: manufactureDAO.over100Employee()){
+            System.out.println(m.toString());
+        }
+        System.out.println(manufactureDAO.countEmployee());
+        System.out.println(manufactureDAO.lastCountry().toString());
+    }
+    private static void addData() throws SQLException {
+        Phone phone1 = new Phone("ip", 20, "den", 10);
+        Phone phone2 = new Phone("ipX", 20, "den", 10);
+        List<Phone> phones = new ArrayList<>();
+        phones.add(phone1);
+        phones.add(phone2);
+        manufacture = new Manufacture("apple", "USA", 10);
+        manufacture.setPhones(phones);
+        phone1.setManufacture(manufacture);
+        phone2.setManufacture(manufacture);
+        for(Phone p: phones){
+            phoneDAO.add(p);
+        }
+    }
+    private static void showData() throws SQLException {
+        List<Phone> list = phoneDAO.readAll();
+        for(Phone p: list){
+            System.out.println(p);
         }
     }
 }

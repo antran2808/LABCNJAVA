@@ -1,34 +1,53 @@
 package org.example.entity;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.List;
 
 @Entity
-@Table(name = "manufactures")
-public class Manufacture {
+@Table(name = "Manufacture")
+public class Manufacture implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "ID", nullable = false)
-    private String id;
+    public Long id;
+    @Column(nullable = false, length = 128)
+    public String name;
+    @Column(nullable = false)
+    public String location;
+    @Column(nullable = false)
+    public int employee;
 
-
-    @Column(name = "Name", nullable = false, length = 128)
-    private String name;
-
-    @Column(name = "location")
-    private String location;
-
-    @Column(name = "employee")
-    private int employee;
-
+    @lombok.Setter
     @OneToMany(mappedBy = "manufacture")
     private List<Phone> phones;
 
-    public String getId(){
+    public Manufacture(String name, String location, int employee) {
+        this.name = name;
+        this.location = location;
+        this.employee = employee;
+    }
+
+    public Manufacture() {
+
+    }
+
+    public List<Phone> getPhones() {
+        return phones;
+    }
+
+    public void setPhones(List<Phone> phones) {
+        this.phones = phones;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -38,10 +57,6 @@ public class Manufacture {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getLocation() {
-        return location;
     }
 
     public void setLocation(String location) {
@@ -54,5 +69,8 @@ public class Manufacture {
 
     public void setEmployee(int employee) {
         this.employee = employee;
+    }
+    public String toString(){
+        return id + "/" + employee + "/" + location;
     }
 }
