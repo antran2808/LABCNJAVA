@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="Lab1" />
+        <module name="Lab2" />
+        <module name="Lab3" />
+        <module name="Lab4" />
+        <module name="Lab9" />
+        <module name="Lab5" />
+        <module name="Lab07_6" />
+        <module name="Lab10" />
+        <module name="Lab07_5" />
+        <module name="Lab07_4" />
+        <module name="Lab07_3" />
+        <module name="Lab08_2" />
+        <module name="Lab07_2" />
+        <module name="Lab08_1" />
+        <module name="Lab07_1" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="Lab07_1" options="-parameters" />
+      <module name="Lab07_2" options="-parameters" />
+      <module name="Lab07_3" options="-parameters" />
+      <module name="Lab07_4" options="-parameters" />
+      <module name="Lab07_5" options="-parameters" />
+      <module name="Lab07_6" options="-parameters" />
+      <module name="Lab08_1" options="-parameters" />
+      <module name="Lab08_2" options="-parameters" />
+      <module name="Lab10" options="-parameters" />
+      <module name="Lab9" options="-parameters" />
+    </option>
+  </component>
+</project>
